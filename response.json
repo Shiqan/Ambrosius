@@ -1,0 +1,54 @@
+{
+    "matches": [
+        {
+            "id": "{id}",
+            "createdAt": "{createdAt}",
+            "duration": "{duration}",
+            "gameMode": "{gameMode}",
+            "shardId": "{shardId}",
+            "patchVersion": "{patchVersion}",
+            "endGameReason": "{endGameReason}",
+            "queue": "{queue}",
+            "rosters": [
+                {
+                    "id": "{id}",
+                    "aces_earned": "{aces_earned}",
+                    "gold": "{gold}",
+                    "heroKills": "{heroKills}",
+                    "krakenCaptures": "{krakenCaptures}",
+                    "side": "{side}",
+                    "turretKills:": "{turretKills}",
+                    "turretsRemaining": "{turretsRemaining}",
+                    "participants": [
+                        {
+                            "id": "{id}",
+                            "actor": "{actor}",
+                            "kills": "{kills}",
+                            "assists": "{assists}",
+                            "deaths": "{deathsid}",
+                            "crystalMineCaptures": "{crystalMineCapturesid}",
+                            "goldMindCaptures": "{goldMindCapturesid}",
+                            "krakenCaptures": "{krakenCaptures}",
+                            "turretCaptures": "{turretCaptures}",
+                            "winner": "{winner}",
+                            "farm": "{farm}",
+                            "minionKills": "{minionKillsfarm}",
+                            "nonJungleMinionKills": "{nonJungleMinionKills}",
+                            "jungleKills": "{jungleKills}",
+                            "firstAfkTime": "{firstAfkTime}",
+                            "wentAfk": "{wentAfk}",
+                            "skinKey": "{skinKey}",
+                            "karmaLevel": "{karmaLevel}",
+                            "level": "{level}",
+                            "skillTier": "{skillTier}",
+                            "itemGrants": "{itemGrants}",
+                            "itemSells": "{itemSells}",
+                            "itemUses": "{itemUses}",
+                            "items": "{items}"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+ }
