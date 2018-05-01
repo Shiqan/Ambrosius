@@ -1,3 +1,7 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+""" Flask endpoint for GraphQL """
+
 from flask import Flask
 from schema import Query
 from flask_graphql import GraphQLView
