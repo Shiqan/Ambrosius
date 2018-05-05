@@ -2,16 +2,35 @@
 # -*- coding: utf-8 -*-
 """ GraphQL wrapper for Vainglory API """
 
+import abc
 import json
 import logging
 import os
 from collections import namedtuple
 
-from graphene import ID, Boolean, Date, Field, Int, List, ObjectType, String
+import requests
 
 import vgapi
+from graphene import (ID, Boolean, Date, Field, Int, Interface, List, ObjectType, String, Union)
 
-# TODO fix this garbage
+
+def event_to_object(event_types, event):
+    """Map a telemetry event to a factory based on the event type."""
+    for t in event_types:
+        if t.__name__ == event['type']:
+            return t(event).parse()
+
+def transform_telemetry(events):
+    processed_telemetry = []
+    event_types = TelemetryFactory.__subclasses__()
+
+    for event in events:
+        e = event_to_object(event_types, event)
+        if e != None:
+            processed_telemetry.append(e)
+    return processed_telemetry
+
+# TODO can this be mapped automatically somehow?
 def transform_player(player_data):
     processed_player = Player(
         player_id = player_data['id'], 
@@ -59,14 +78,18 @@ def transform(data):
     for match in matches:
         telemetry_id = match['relationships']['assets']['data'][0]['id']
         telemetry_data = [i for i in data['included'] if i['id'] == telemetry_id][0]
-        processed_telemetry = TelemetryData(
+        processed_telemetry_data = TelemetryData(
             telemetry_id = telemetry_data['id'],
             name = telemetry_data['attributes']['name'],
             url = telemetry_data['attributes']['URL'], 
             createdAt = telemetry_data['attributes']['createdAt']
         )
-
         logging.error(telemetry_data)
+        
+        # TODO use api wrapper
+        events = requests.get(processed_telemetry_data.url).json()
+        processed_telemetry = transform_telemetry(events)
+        # logging.error(processed_telemetry)
 
         processed_match = Match(
             match_id = match['id'],
@@ -78,6 +101,7 @@ def transform(data):
             endGameReason = match['attributes']['stats']['endGameReason'],
             queue = match['attributes']['stats']['queue'],
             rosters = [],
+            telemetry_data = processed_telemetry_data,
             telemetry = processed_telemetry
         )
 
@@ -138,6 +162,73 @@ def transform(data):
         response.append(processed_match)
     return response
 
+# TODO Move to seprate folders
+class TelemetryFactory():
+    """Abstract factory interface for Telemetry events."""
+    __metaclass__ = abc.ABCMeta
+    def __init__(self, data):
+        self.payload = data['payload']
+        self.time = data['time']
+        self.type = data['type']
+
+    @abc.abstractmethod
+    def parse(self):
+        pass
+
+class HeroSelect(TelemetryFactory):
+    """Concrete factory for Hero Select event."""  
+    def parse(self):
+        return TelemetryHeroSelect(
+            time = self.time,
+            type = self.type,
+            hero = self.payload['Hero'],
+            team = self.payload['Team'],
+            player = self.payload['Player'],
+            handle = self.payload['Handle']
+        )
+
+class HeroSkinSelect(TelemetryFactory):
+    """Concrete factory for Hero Skin Select event."""
+    def parse(self):
+        return TelemetryHeroSkin(
+            time = self.time,
+            type = self.type,
+            hero = self.payload['Hero'],
+            skin = self.payload['Skin']
+        )
+
+class HeroBan(TelemetryFactory):
+    """Concrete factory for Hero Ban event."""
+    def parse(self):
+        return TelemetryHeroBan(
+            time = self.time,
+            type = self.type,
+            hero = self.payload['Hero'],
+            team = self.payload['Team']
+        )
+
+class HeroSwap(TelemetryFactory):
+    """Concrete factory for Hero Ban event."""
+    def parse(self):
+        return TelemetryHeroSwap(
+            time = self.time,
+            type = self.type,
+            swap = [TelemetryHeroSwapPayload(
+                hero = i['Hero'],
+                team = i['Team'],
+                player = i['Player'],
+            ) for i in self.payload]
+        )
+
+class PlayerFirstSpawn(TelemetryFactory):
+    """Concrete factory for Player First Spawn event."""
+    def parse(self):
+        return TelemetryPlayerFirstSpawn(
+            time = self.time,
+            type = self.type,
+            team = self.payload['Team'],
+            actor = self.payload['Actor']
+        )
 
 class TelemetryData(ObjectType):
     telemetry_id = ID()
@@ -145,13 +236,53 @@ class TelemetryData(ObjectType):
     url = String()
     createdAt = Date()
 
-class TelemetryBaseEvent(ObjectType):
+class TelemetryBaseEvent(Interface):
     time = Date()
     type = String()
 
-class TelemetryHeroSelect(TelemetryBaseEvent):
-    payload = ""
+class TelemetryHeroSelect(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent,)
 
+    hero = String()
+    team = String()
+    player = String()
+    handle = String()
+
+class TelemetryHeroBan(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent,)
+
+    hero = String()
+    team = String()
+
+class TelemetryHeroSkin(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent,)
+    hero = String()
+    skin = String()
+
+class TelemetryHeroSwapPayload(ObjectType):
+    hero = String()
+    team = String()
+    player = String()
+
+class TelemetryHeroSwap(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent,)
+
+    swap = List(TelemetryHeroSwapPayload)
+
+class TelemetryPlayerFirstSpawn(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent, )
+    
+    team = String()
+    actor = String()
+
+class TelemetryEvent(Union):
+    class Meta:
+        types = (TelemetryHeroBan, TelemetryHeroSelect, TelemetryHeroSkin, TelemetryHeroSwap, TelemetryPlayerFirstSpawn)
 
 class GamesPlayed(ObjectType):
     aral = Int()
@@ -247,7 +378,8 @@ class Match(ObjectType):
     endGameReason = String()
     queue = String()
     rosters = List(Roster)
-    telemetry = Field(TelemetryData)
+    telemetry_data = Field(TelemetryData)
+    telemetry = List(TelemetryEvent)
 
 
 class Query(ObjectType):
@@ -256,8 +388,9 @@ class Query(ObjectType):
 
     def resolve_matches(self, info, player_id):
         # "2537169e-2619-11e5-91a4-06eb725f8a76"
-        api = vgapi.VaingloryApi(os.environ.get('API_KEY', None))
+        api = vgapi.VaingloryApi(os.environ.get('API_KEY', "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJkNzYzYTkyMC1kYzMyLTAxMzQtYTc1NC0wMjQyYWMxMTAwMDMiLCJpc3MiOiJnYW1lbG9ja2VyIiwiaWF0IjoxNDg3ODgwOTcwLCJwdWIiOiJzZW1jIiwidGl0bGUiOiJ2YWluZ2xvcnkiLCJhcHAiOiJkNzYxY2Q1MC1kYzMyLTAxMzQtYTc1My0wMjQyYWMxMTAwMDMiLCJzY29wZSI6ImNvbW11bml0eSIsImxpbWl0IjoxfQ.GzkEYeb8r3x6z6_vj5E7IICYy_RvsOp4gnfTlthbEJs"))
         m = api.matches("eu", limit=5, playerId=[player_id])
+
         # logging.error(m)
         transformed = transform(m)
         return transformed
