@@ -2,16 +2,19 @@
 # -*- coding: utf-8 -*-
 """ GraphQL wrapper for Vainglory API """
 
-import abc
+import datetime
 import json
 import logging
 import os
-from collections import namedtuple
 
 import requests
+from graphene import (ID, Boolean, Date, Field, Int, Interface, List,
+                      ObjectType, String, Union)
 
+import factories.telemetry as factory
 import vgapi
-from graphene import (ID, Boolean, Date, Field, Int, Interface, List, ObjectType, String, Union)
+from models import (GamesPlayed, Item, Match, Participant, Player,
+                    RankedPoints, Roster, TelemetryData, TelemetryEvent)
 
 
 def event_to_object(event_types, event):
@@ -22,7 +25,7 @@ def event_to_object(event_types, event):
 
 def transform_telemetry(events):
     processed_telemetry = []
-    event_types = TelemetryFactory.__subclasses__()
+    event_types = factory.TelemetryFactory.__subclasses__()
 
     for event in events:
         e = event_to_object(event_types, event)
@@ -82,7 +85,7 @@ def transform(data):
             telemetry_id = telemetry_data['id'],
             name = telemetry_data['attributes']['name'],
             url = telemetry_data['attributes']['URL'], 
-            createdAt = telemetry_data['attributes']['createdAt']
+            createdAt = datetime.datetime.strptime(telemetry_data['attributes']['createdAt'], '%Y-%m-%dT%H:%M:%SZ')
         )
         logging.error(telemetry_data)
         
@@ -93,7 +96,7 @@ def transform(data):
 
         processed_match = Match(
             match_id = match['id'],
-            createdAt = match['attributes']['createdAt'],
+            createdAt = datetime.datetime.strptime(match['attributes']['createdAt'], '%Y-%m-%dT%H:%M:%SZ'),
             duration = match['attributes']['duration'],
             gameMode = match['attributes']['gameMode'],
             shardId = match['attributes']['shardId'],
@@ -162,225 +165,6 @@ def transform(data):
         response.append(processed_match)
     return response
 
-# TODO Move to seprate folders
-class TelemetryFactory():
-    """Abstract factory interface for Telemetry events."""
-    __metaclass__ = abc.ABCMeta
-    def __init__(self, data):
-        self.payload = data['payload']
-        self.time = data['time']
-        self.type = data['type']
-
-    @abc.abstractmethod
-    def parse(self):
-        pass
-
-class HeroSelect(TelemetryFactory):
-    """Concrete factory for Hero Select event."""  
-    def parse(self):
-        return TelemetryHeroSelect(
-            time = self.time,
-            type = self.type,
-            hero = self.payload['Hero'],
-            team = self.payload['Team'],
-            player = self.payload['Player'],
-            handle = self.payload['Handle']
-        )
-
-class HeroSkinSelect(TelemetryFactory):
-    """Concrete factory for Hero Skin Select event."""
-    def parse(self):
-        return TelemetryHeroSkin(
-            time = self.time,
-            type = self.type,
-            hero = self.payload['Hero'],
-            skin = self.payload['Skin']
-        )
-
-class HeroBan(TelemetryFactory):
-    """Concrete factory for Hero Ban event."""
-    def parse(self):
-        return TelemetryHeroBan(
-            time = self.time,
-            type = self.type,
-            hero = self.payload['Hero'],
-            team = self.payload['Team']
-        )
-
-class HeroSwap(TelemetryFactory):
-    """Concrete factory for Hero Ban event."""
-    def parse(self):
-        return TelemetryHeroSwap(
-            time = self.time,
-            type = self.type,
-            swap = [TelemetryHeroSwapPayload(
-                hero = i['Hero'],
-                team = i['Team'],
-                player = i['Player'],
-            ) for i in self.payload]
-        )
-
-class PlayerFirstSpawn(TelemetryFactory):
-    """Concrete factory for Player First Spawn event."""
-    def parse(self):
-        return TelemetryPlayerFirstSpawn(
-            time = self.time,
-            type = self.type,
-            team = self.payload['Team'],
-            actor = self.payload['Actor']
-        )
-
-class TelemetryData(ObjectType):
-    telemetry_id = ID()
-    name = String()
-    url = String()
-    createdAt = Date()
-
-class TelemetryBaseEvent(Interface):
-    time = Date()
-    type = String()
-
-class TelemetryHeroSelect(ObjectType):
-    class Meta:
-        interfaces = (TelemetryBaseEvent,)
-
-    hero = String()
-    team = String()
-    player = String()
-    handle = String()
-
-class TelemetryHeroBan(ObjectType):
-    class Meta:
-        interfaces = (TelemetryBaseEvent,)
-
-    hero = String()
-    team = String()
-
-class TelemetryHeroSkin(ObjectType):
-    class Meta:
-        interfaces = (TelemetryBaseEvent,)
-    hero = String()
-    skin = String()
-
-class TelemetryHeroSwapPayload(ObjectType):
-    hero = String()
-    team = String()
-    player = String()
-
-class TelemetryHeroSwap(ObjectType):
-    class Meta:
-        interfaces = (TelemetryBaseEvent,)
-
-    swap = List(TelemetryHeroSwapPayload)
-
-class TelemetryPlayerFirstSpawn(ObjectType):
-    class Meta:
-        interfaces = (TelemetryBaseEvent, )
-    
-    team = String()
-    actor = String()
-
-class TelemetryEvent(Union):
-    class Meta:
-        types = (TelemetryHeroBan, TelemetryHeroSelect, TelemetryHeroSkin, TelemetryHeroSwap, TelemetryPlayerFirstSpawn)
-
-class GamesPlayed(ObjectType):
-    aral = Int()
-    blitz = Int()
-    blitz_rounds = Int()
-    casual = Int()
-    casual_5v5 = Int()
-    ranked = Int()
-
-
-class RankedPoints(ObjectType):
-    blitz = Int()
-    ranked = Int()
-
-
-class Player(ObjectType):
-    player_id = ID()
-    name = String()
-    patchVersion = String()
-    shardId = String()
-    lifetimeGold = Int()
-    lossStreak = Int()
-    winStreak = Int()
-    elo_earned_season_4 = Int()
-    elo_earned_season_5 = Int()
-    elo_earned_season_6 = Int()
-    elo_earned_season_7 = Int()
-    elo_earned_season_8 = Int()
-    elo_earned_season_9 = Int()
-    gamesPlayed = Field(GamesPlayed)
-    played = Int()
-    played_ranked = Int()
-    played_aral = Int()
-    played_casual = Int()
-    played_blitz = Int()
-    rankPoints = Field(RankedPoints)
-    guildTag = String()
-    karmaLevel = Int()
-    level = Int()
-    skillTier = Int()
-    wins = Int()
-    xp = Int()
-
-class Item(ObjectType):
-    name = String()
-    uses = Int()
-
-class Participant(ObjectType):
-    participant_id = ID()
-    player = Field(Player)
-    actor = String()
-    kills = Int()
-    assists = Int()
-    deaths = Int()
-    crystalMineCaptures = Int()
-    goldMindCaptures = Int()
-    krakenCaptures = Int()
-    turretCaptures = Int()
-    winner = Boolean()
-    farm = Int()
-    minionKills = Int()
-    nonJungleMinionKills = Int()
-    jungleKills = Int()
-    firstAfkTime = Int()
-    wentAfk = Boolean()
-    skinKey = String()
-    karmaLevel = String()
-    level = Int()
-    skillTier = Int()
-    itemGrants = List(Item)
-    itemSells = List(Item)
-    itemUses = List(Item)
-    items = List(Item)
-
-class Roster(ObjectType):
-    roster_id = ID() 
-    aces_earned = Int()
-    gold = Int()
-    heroKills = Int()
-    krakenCaptures = Int()
-    side = String()
-    turretKills = Int()
-    turretsRemaining = Int()
-    participants = List(Participant)
-
-class Match(ObjectType):
-    match_id = ID()
-    createdAt = Date()
-    duration = Int()
-    gameMode  = String()
-    shardId = String()
-    patchVersion = String()
-    endGameReason = String()
-    queue = String()
-    rosters = List(Roster)
-    telemetry_data = Field(TelemetryData)
-    telemetry = List(TelemetryEvent)
-
 
 class Query(ObjectType):
     matches = List(Match, player_id=ID())
@@ -388,7 +172,7 @@ class Query(ObjectType):
 
     def resolve_matches(self, info, player_id):
         # "2537169e-2619-11e5-91a4-06eb725f8a76"
-        api = vgapi.VaingloryApi(os.environ.get('API_KEY', "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJkNzYzYTkyMC1kYzMyLTAxMzQtYTc1NC0wMjQyYWMxMTAwMDMiLCJpc3MiOiJnYW1lbG9ja2VyIiwiaWF0IjoxNDg3ODgwOTcwLCJwdWIiOiJzZW1jIiwidGl0bGUiOiJ2YWluZ2xvcnkiLCJhcHAiOiJkNzYxY2Q1MC1kYzMyLTAxMzQtYTc1My0wMjQyYWMxMTAwMDMiLCJzY29wZSI6ImNvbW11bml0eSIsImxpbWl0IjoxfQ.GzkEYeb8r3x6z6_vj5E7IICYy_RvsOp4gnfTlthbEJs"))
+        api = vgapi.VaingloryApi(os.environ.get('API_KEY', None))
         m = api.matches("eu", limit=5, playerId=[player_id])
 
         # logging.error(m)
