@@ -4,6 +4,10 @@
 
 from graphene import (ID, Boolean, Date, Field, Int, Interface, List, ObjectType, String, Union)
 
+class Position(ObjectType):
+    x = Int()
+    y = Int()
+    z = Int()
 
 class TelemetryData(ObjectType):
     telemetry_id = ID()
@@ -55,6 +59,69 @@ class TelemetryPlayerFirstSpawn(ObjectType):
     team = String()
     actor = String()
 
+class TelemetryLevelUp(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent, )
+    
+    team = String()
+    actor = String()
+    level = Int()
+    lifetimegold = Int()
+
+class TelemetryBuyItem(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent, )
+    
+    team = String()
+    actor = String()
+    item = String()
+    cost = Int()
+    remaininggold = Int()
+    position = Field(Position)
+
+class TelemetrySellItem(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent, )
+    
+    team = String()
+    actor = String()
+    item = String()
+    cost = Int()
+
+class TelemetryLearnAbility(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent, )
+
+    team = String()
+    actor = String()
+    ability = String()
+    level = Int()
+
+class TelemetryUseItemAbility(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent, )
+
+    team = String()
+    actor = String()
+    ability = String()
+    position = Field(Position)
+    target = String()
+    target_position = Field(Position)
+
+class TelemetryDealDamage(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent, )
+
+    team = String()
+    actor = String()
+    target = String()
+    source = String()
+    damage = Int()
+    dealt = Int()
+    is_hero = Boolean()
+    target_is_hero = Boolean()
+
+# TODO auto select type
 class TelemetryEvent(Union):
     class Meta:
-        types = (TelemetryHeroBan, TelemetryHeroSelect, TelemetryHeroSkin, TelemetryHeroSwap, TelemetryPlayerFirstSpawn)
+        types = (TelemetryHeroBan, TelemetryHeroSelect, TelemetryHeroSkin, TelemetryHeroSwap, TelemetryPlayerFirstSpawn, TelemetryLevelUp, TelemetryBuyItem, TelemetrySellItem, TelemetryLearnAbility, TelemetryUseItemAbility)
