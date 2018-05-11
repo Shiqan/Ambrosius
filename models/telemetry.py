@@ -97,6 +97,17 @@ class TelemetryLearnAbility(ObjectType):
     ability = String()
     level = Int()
 
+class TelemetryUseAbility(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent, )
+
+    team = String()
+    actor = String()
+    ability = String()
+    position = Field(Position)
+    target = String()
+    target_position = Field(Position)
+
 class TelemetryUseItemAbility(ObjectType):
     class Meta:
         interfaces = (TelemetryBaseEvent, )
@@ -121,7 +132,48 @@ class TelemetryDealDamage(ObjectType):
     is_hero = Boolean()
     target_is_hero = Boolean()
 
+class TelemetryHealTarget(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent, )
+
+    team = String()
+    actor = String()
+    target = String()
+    target_team = String()
+    source = String()
+    heal = Int()
+    healed = Int()
+    is_hero = Boolean()
+    target_is_hero = Boolean()
+
+class TelemetryVampirism(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent, )
+
+    team = String()
+    actor = String()
+    target = String()
+    target_team = String()
+    source = String()
+    vamp = Int()
+    is_hero = Boolean()
+    target_is_hero = Boolean()
+
+class TelemetryKillActor(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent, )
+
+    team = String()
+    actor = String()
+    killed = String()
+    killed_team = String()
+    gold = Int()
+    is_hero = Boolean()
+    target_is_hero = Boolean()
+    position = Field(Position)
+
 # TODO auto select type
 class TelemetryEvent(Union):
     class Meta:
-        types = (TelemetryHeroBan, TelemetryHeroSelect, TelemetryHeroSkin, TelemetryHeroSwap, TelemetryPlayerFirstSpawn, TelemetryLevelUp, TelemetryBuyItem, TelemetrySellItem, TelemetryLearnAbility, TelemetryUseItemAbility)
+        types = (TelemetryHeroBan, TelemetryHeroSelect, TelemetryHeroSkin, TelemetryHeroSwap, TelemetryPlayerFirstSpawn, TelemetryLevelUp, TelemetryBuyItem, TelemetrySellItem, TelemetryLearnAbility, TelemetryUseAbility, TelemetryUseItemAbility,
+            TelemetryDealDamage, TelemetryHealTarget, TelemetryVampirism, TelemetryKillActor)

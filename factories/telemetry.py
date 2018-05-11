@@ -81,14 +81,14 @@ class LevelUp(TelemetryFactory):
             team = self.payload['Team'],
             actor = self.payload['Actor'],
             level = self.payload['Level'],
-            lifetimegold = self.payload['LifeTimeGold']
+            lifetimegold = self.payload['LifetimeGold']
         )
 
 class BuyItem(TelemetryFactory):
     """Concrete factory for Buy Item event."""
     def parse(self):
-        x, y, z = self.payload['Position'].split(',')
-        return model.TelemetryLevelUp(
+        x, y, z = self.payload['Position']
+        return model.TelemetryBuyItem(
             time = self.time,
             type = self.type,
             team = self.payload['Team'],
@@ -106,7 +106,7 @@ class BuyItem(TelemetryFactory):
 class SellItem(TelemetryFactory):
     """Concrete factory for Sell Item event."""
     def parse(self):
-        return model.TelemetryLevelUp(
+        return model.TelemetrySellItem(
             time = self.time,
             type = self.type,
             team = self.payload['Team'],
@@ -130,9 +130,33 @@ class LearnAbility(TelemetryFactory):
 class UseAbility(TelemetryFactory):
     """Concrete factory for Use Ability event."""
     def parse(self):
-        x, y, z = self.payload['Position'].split(',')
-        tx, ty, tz =  self.payload['TargetPosition'].split(',')
-        return model.TelemetryLearnAbility(
+        x, y, z = self.payload['Position']
+        tx, ty, tz =  self.payload['TargetPosition']
+        return model.TelemetryUseAbility(
+            time = self.time,
+            type = self.type,
+            team = self.payload['Team'],
+            actor = self.payload['Actor'],
+            ability = self.payload['Ability'],
+            position =  model.Position(
+                x = x,
+                y = y,
+                z = z
+            ),
+            target = self.payload['TargetActor'],            
+            target_position =  model.Position(
+                x = tx,
+                y = ty,
+                z = tz
+            )
+        )
+
+class UseItemAbility(TelemetryFactory):
+    """Concrete factory for Use Item Ability event."""
+    def parse(self):
+        x, y, z = self.payload['Position']
+        tx, ty, tz =  self.payload['TargetPosition']
+        return model.TelemetryUseItemAbility(
             time = self.time,
             type = self.type,
             team = self.payload['Team'],
@@ -154,7 +178,7 @@ class UseAbility(TelemetryFactory):
 class DealDamage(TelemetryFactory):
     """Concrete factory for Deal Damage event."""
     def parse(self):
-        return model.TelemetryLearnAbility(
+        return model.TelemetryDealDamage(
             time = self.time,
             type = self.type,
             team = self.payload['Team'],
@@ -165,4 +189,58 @@ class DealDamage(TelemetryFactory):
             dealt = self.payload['Dealt'],
             is_hero = self.payload['IsHero'],
             target_is_hero = self.payload['TargetIsHero']
+        )
+
+class HealTarget(TelemetryFactory):
+    """Concrete factory for Heal Target event."""
+    def parse(self):
+        return model.TelemetryHealTarget(
+            time = self.time,
+            type = self.type,
+            team = self.payload['Team'],
+            actor = self.payload['Actor'],
+            target = self.payload['TargetActor'],
+            target_team = self.payload['TargetTeam'],
+            source = self.payload['Source'],
+            heal = self.payload['Heal'],
+            healed = self.payload['Healed'],
+            is_hero = self.payload['IsHero'],
+            target_is_hero = self.payload['TargetIsHero']
+        )
+
+class Vampirism(TelemetryFactory):
+    """Concrete factory for Vampirism event."""
+    def parse(self):
+        return model.TelemetryVampirism(
+            time = self.time,
+            type = self.type,
+            team = self.payload['Team'],
+            actor = self.payload['Actor'],
+            target = self.payload['TargetActor'],
+            target_team = self.payload['TargetTeam'],
+            source = self.payload['Source'],
+            vamp = self.payload['Vamp'],
+            is_hero = self.payload['IsHero'],
+            target_is_hero = self.payload['TargetIsHero']
+        )
+
+class KillActor(TelemetryFactory):
+    """Concrete factory for Kill Actor event."""
+    def parse(self):
+        x, y, z = self.payload['Position']
+        return model.TelemetryKillActor(
+            time = self.time,
+            type = self.type,
+            team = self.payload['Team'],
+            actor = self.payload['Actor'],
+            killed = self.payload['Killed'],
+            killed_team = self.payload['KilledTeam'],
+            gold = self.payload['Gold'],
+            is_hero = self.payload['IsHero'],
+            target_is_hero = self.payload['TargetIsHero'],
+            position = model.Position(
+                x = x,
+                y = y,
+                z = z
+            )
         )

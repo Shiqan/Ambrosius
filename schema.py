@@ -31,6 +31,8 @@ def transform_telemetry(events):
         e = event_to_object(event_types, event)
         if e != None:
             processed_telemetry.append(e)
+        else:
+            logging.error(event['type'])
     return processed_telemetry
 
 # TODO can this be mapped automatically somehow?
