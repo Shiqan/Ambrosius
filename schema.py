@@ -16,6 +16,8 @@ import vgapi
 from models import (GamesPlayed, Item, Match, Participant, Player,
                     RankedPoints, Roster, TelemetryData, TelemetryEvent)
 
+# player_id = "2537169e-2619-11e5-91a4-06eb725f8a76"
+api = vgapi.VaingloryApi(os.environ.get('API_KEY', None))
 
 def event_to_object(event_types, event):
     """Map a telemetry event to a factory based on the event type."""
@@ -173,8 +175,6 @@ class Query(ObjectType):
     player = Field(Player, player_id=ID())
 
     def resolve_matches(self, info, player):      
-        # player_id = "2537169e-2619-11e5-91a4-06eb725f8a76"
-        api = vgapi.VaingloryApi(os.environ.get('API_KEY', None))
         # m = api.matches("eu", limit=5, playerId=[player_id])
         m = api.matches("eu", limit=5, player=[player])
 
@@ -183,7 +183,6 @@ class Query(ObjectType):
         return transformed
 
     def resolve_player(self, info, player_id):
-        api = vgapi.VaingloryApi(os.environ.get('API_KEY', None))
         p = api.player(player_id, "eu")
         # logging.error(p)
         transformed = transform_player(p['data'])

@@ -244,3 +244,49 @@ class KillActor(TelemetryFactory):
                 z = z
             )
         )
+
+
+class EarnXP(TelemetryFactory):
+    """Concrete factory for Gold From Tower Kill event."""
+    def parse(self):
+        return model.TelemetryEarnXP(
+            time = self.time,
+            type = self.type,
+            team = self.payload['Team'],
+            actor = self.payload['Actor'],
+            source = self.payload['Source'],
+            amount = self.payload['Amount'],
+            shared_with = self.payload['SharedWith']
+        )
+
+class NPCkillNPC(TelemetryFactory):
+    """Concrete factory for NPC Kill NPC event."""
+    def parse(self):
+        x, y, z = self.payload['Position']
+        return model.TelemetryNPCkillNPC(
+            time = self.time,
+            type = self.type,
+            team = self.payload['Team'],
+            actor = self.payload['Actor'],
+            killed = self.payload['Killed'],
+            killed_team = self.payload['KilledTeam'],
+            gold = self.payload['Gold'],
+            is_hero = self.payload['IsHero'],
+            target_is_hero = self.payload['TargetIsHero'],
+            position = model.Position(
+                x = x,
+                y = y,
+                z = z
+            )
+        )
+
+class GoldFromTowerKill(TelemetryFactory):
+    """Concrete factory for Gold From Tower Kill event."""
+    def parse(self):
+        return model.TelemetryGoldFromTowerKill(
+            time = self.time,
+            type = self.type,
+            team = self.payload['Team'],
+            actor = self.payload['Actor'],
+            amount = self.payload['Amount']
+        )

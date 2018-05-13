@@ -172,8 +172,40 @@ class TelemetryKillActor(ObjectType):
     target_is_hero = Boolean()
     position = Field(Position)
 
+class TelemetryEarnXP(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent, )
+
+    team = String()
+    actor = String()
+    source = String()
+    amount = Int()
+    shared_with = Int()
+
+class TelemetryNPCkillNPC(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent, )
+
+    team = String()
+    actor = String()
+    killed = String()
+    killed_team = Int()
+    gold = Int()
+    is_hero = Boolean()
+    target_is_hero = Boolean()
+    position = Field(Position)
+
+class TelemetryGoldFromTowerKill(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent, )
+
+    team = String()
+    actor = String()
+    amount = Int()
+
+
 # TODO auto select type
 class TelemetryEvent(Union):
     class Meta:
         types = (TelemetryHeroBan, TelemetryHeroSelect, TelemetryHeroSkin, TelemetryHeroSwap, TelemetryPlayerFirstSpawn, TelemetryLevelUp, TelemetryBuyItem, TelemetrySellItem, TelemetryLearnAbility, TelemetryUseAbility, TelemetryUseItemAbility,
-            TelemetryDealDamage, TelemetryHealTarget, TelemetryVampirism, TelemetryKillActor)
+            TelemetryDealDamage, TelemetryHealTarget, TelemetryVampirism, TelemetryKillActor, TelemetryEarnXP, TelemetryGoldFromTowerKill, TelemetryNPCkillNPC)
