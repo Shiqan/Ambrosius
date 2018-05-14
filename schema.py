@@ -171,19 +171,16 @@ def transform(data):
 
 
 class Query(ObjectType):
-    matches = List(Match, player=String())
+    matches = List(Match, player=String(), playerId=ID(), team=String(), limit=Int(), offset=Int())
     player = Field(Player, player_id=ID())
 
-    def resolve_matches(self, info, player):      
-        # m = api.matches("eu", limit=5, playerId=[player_id])
-        m = api.matches("eu", limit=5, player=[player])
-
-        # logging.error(m)
+    def resolve_matches(self, info, **kwargs):      
+        logging.debug(kwargs)   
+        m = api.matches("eu", **kwargs)
         transformed = transform(m)
         return transformed
 
     def resolve_player(self, info, player_id):
         p = api.player(player_id, "eu")
-        # logging.error(p)
         transformed = transform_player(p['data'])
         return transformed
