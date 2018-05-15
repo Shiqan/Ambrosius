@@ -91,9 +91,9 @@ def transform(data):
             url = telemetry_data['attributes']['URL'], 
             createdAt = datetime.datetime.strptime(telemetry_data['attributes']['createdAt'], '%Y-%m-%dT%H:%M:%SZ')
         )
-        logging.error(telemetry_data)
+        # logging.error(telemetry_data)
         
-        # TODO use api wrapper
+        # TODO use api
         events = requests.get(processed_telemetry_data.url).json()
         processed_telemetry = transform_telemetry(events)
         # logging.error(processed_telemetry)
@@ -175,7 +175,7 @@ class Query(ObjectType):
     player = Field(Player, player_id=ID())
 
     def resolve_matches(self, info, **kwargs):      
-        logging.debug(kwargs)   
+        logging.debug(kwargs)
         m = api.matches("eu", **kwargs)
         transformed = transform(m)
         return transformed

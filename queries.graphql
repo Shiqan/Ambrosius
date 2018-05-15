@@ -1,0 +1,76 @@
+
+{
+  matches(player: "Shiqan", limit:5) {
+    matchId
+  }
+}
+
+
+# Variables
+query($playerName:String!) {
+  matches(player: $playerName, limit:5) {
+    matchId
+  }
+}
+
+{
+    "playerName": "Shiqan"
+}
+
+query MatchDetails($playerName: String!, $details: Boolean!) {
+  matches(player: $playerName, limit: 1) {
+    matchId
+    rosters @include(if: $details) {
+      gold
+    }
+  }
+}
+
+{
+  "playerName": "Shiqan",
+  "details": false
+}
+
+# Aliases
+{
+  Shiqan: player(playerId: "2537169e-2619-11e5-91a4-06eb725f8a76") {
+    name
+  }
+  Shanlom: player(playerId: "78a83898-7193-11e4-9389-062d0b175276") {
+    name
+  }
+}
+
+
+# Fragments
+{
+  Shiqan: player(playerId: "2537169e-2619-11e5-91a4-06eb725f8a76") {
+    ...comparisonFields 
+  }
+  Shanlom: player(playerId: "78a83898-7193-11e4-9389-062d0b175276") {
+    ...comparisonFields
+  }
+}
+
+fragment comparisonFields on Player {
+  name
+  guildTag
+}
+
+# Named queries
+query Last5Matches($playerName:String!) {
+  matches(player: $playerName, limit:5) {
+    matchId
+  }
+}
+
+query Last10Matches($playerName:String!) {
+  matches(player: $playerName, limit:10) {
+    matchId
+  }
+}
+
+{
+    "playerName": "Shiqan"
+}
+
