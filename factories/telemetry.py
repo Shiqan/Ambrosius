@@ -290,3 +290,94 @@ class GoldFromTowerKill(TelemetryFactory):
             actor = self.payload['Actor'],
             amount = self.payload['Amount']
         )
+
+class GoldFromGoldMine(TelemetryFactory):
+    """Concrete factory for Gold From Goldmine event."""
+    def parse(self):
+        return model.TelemetryGoldFromGoldMine(
+            time = self.time,
+            type = self.type,
+            team = self.payload['Team'],
+            actor = self.payload['Actor'],
+            amount = self.payload['Amount']
+        )
+
+class GoldFromKrakenKill(TelemetryFactory):
+    """Concrete factory for Gold From Goldmine event."""
+    def parse(self):
+        return model.TelemetryGoldFromKrakenKill(
+            time = self.time,
+            type = self.type,
+            team = self.payload['Team'],
+            actor = self.payload['Actor'],
+            amount = self.payload['Amount']
+        )
+
+class GoldFromExecution(TelemetryFactory):
+    """Concrete factory for Gold From Execution event."""
+    def parse(self):
+        return model.TelemetryGoldFromExecution(
+            time = self.time,
+            type = self.type,
+            team = self.payload['Team'],
+            actor = self.payload['Actor'],
+            amount = self.payload['Amount']
+        )
+
+class Executed(TelemetryFactory):
+    """Concrete factory for Gold From Execution event."""
+    def parse(self):
+        x, y, z = self.payload['Position']
+        return model.TelemetryExecuted(
+            time = self.time,
+            type = self.type,
+            team = self.payload['Team'],
+            actor = self.payload['Actor'],
+            killed = self.payload['Killed'],
+            killed_team = self.payload['KilledTeam'],
+            gold = self.payload['Gold'],
+            is_hero = self.payload['IsHero'],
+            target_is_hero = self.payload['TargetIsHero'],
+            position = model.Position(
+                x = x,
+                y = y,
+                z = z
+            )
+        )
+
+class TalentEquipped(TelemetryFactory):
+    """Concrete factory for Talent Equipped event."""
+    def parse(self):
+        return model.TelemetryTalentEquipped(
+            time = self.time,
+            type = self.type,
+            team = self.payload['Team'],
+            actor = self.payload['Actor'],
+            talent = self.payload['Talent'],
+            level = self.payload['Level']
+        )
+
+class DraftLobby_Role_Bumped(TelemetryFactory):
+    """Concrete factory for DraftLobby_Role_Bumped event."""
+    def parse(self):
+        return model.TelemetryDraftLobby_Role_Bumped(
+            time = self.time,
+            type = self.type,
+            mode = self.payload['mode'],
+            elo_3v3 = self.payload['eloTier3v3'],
+            elo_5v5 = self.payload['eloTier5v5'],
+            turn = self.payload['turn'],
+            role_bumped = self.payload['roleBumped']
+        )
+
+class DraftLobby_AutoLocked(TelemetryFactory):
+    """Concrete factory for DraftLobby_AutoLocked event."""
+    def parse(self):
+        return model.TelemetryDraftLobby_AutoLocked(
+            time = self.time,
+            type = self.type,
+            mode = self.payload['mode'],
+            elo_3v3 = self.payload['eloTier3v3'],
+            elo_5v5 = self.payload['eloTier5v5']
+        )
+

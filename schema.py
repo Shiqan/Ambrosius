@@ -17,6 +17,7 @@ from models import (GamesPlayed, Item, Match, Participant, Player,
                     RankedPoints, Roster, TelemetryData, TelemetryEvent)
 
 # player_id = "2537169e-2619-11e5-91a4-06eb725f8a76"
+# match_id = "6ab5e776-432c-11e8-ab8b-027fff42cc70"
 api = vgapi.VaingloryApi(os.environ.get('API_KEY', None))
 
 def event_to_object(event_types, event):
@@ -91,7 +92,7 @@ def transform(data):
             url = telemetry_data['attributes']['URL'], 
             createdAt = datetime.datetime.strptime(telemetry_data['attributes']['createdAt'], '%Y-%m-%dT%H:%M:%SZ')
         )
-        # logging.error(telemetry_data)
+        logging.error(telemetry_data)
         
         # TODO use api
         events = requests.get(processed_telemetry_data.url).json()
@@ -171,7 +172,8 @@ def transform(data):
 
 
 class Query(ObjectType):
-    matches = List(Match, player=String(), playerId=ID(), team=String(), limit=Int(), offset=Int())
+    matches = List(Match, player=String(), playerId=ID(), team=String(), limit=Int(), offset=Int(), gameMode=String())
+    match = Field(Match, match_id=ID())
     player = Field(Player, player_id=ID())
 
     def resolve_matches(self, info, **kwargs):      
@@ -179,6 +181,11 @@ class Query(ObjectType):
         m = api.matches("eu", **kwargs)
         transformed = transform(m)
         return transformed
+
+    # def resolve_match(self, info, match_id):
+    #     m = api.match(match_id, "eu")
+    #     transformed = transform(m)
+    #     return transformed
 
     def resolve_player(self, info, player_id):
         p = api.player(player_id, "eu")

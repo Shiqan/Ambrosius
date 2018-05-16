@@ -203,9 +203,75 @@ class TelemetryGoldFromTowerKill(ObjectType):
     actor = String()
     amount = Int()
 
+class TelemetryGoldFromGoldMine(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent, )
+
+    team = String()
+    actor = String()
+    amount = Int()
+
+class TelemetryGoldFromKrakenKill(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent, )
+
+    team = String()
+    actor = String()
+    amount = Int()
+
+class TelemetryGoldFromExecution(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent, )
+
+    team = String()
+    actor = String()
+    amount = Int()
+
+class TelemetryExecuted(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent, )
+
+    team = String()
+    actor = String()
+    killed = String()
+    killed_team = Int()
+    gold = Int()
+    is_hero = Boolean()
+    target_is_hero = Boolean()
+    position = Field(Position)
+
+class TelemetryTalentEquipped(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent, )
+
+    team = String()
+    actor = String()
+    talent = String()
+    level = Int()
+
+class TelemetryDraftLobby_Role_Bumped(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent, )
+
+    mode = String()
+    elo_5v5 = Int()
+    elo_3v3 = Int()
+    turn = Int()
+    role_bumped = Int()
+
+
+class TelemetryDraftLobby_AutoLocked(ObjectType):
+    class Meta:
+        interfaces = (TelemetryBaseEvent, )
+
+    mode = String()
+    elo_5v5 = Int()
+    elo_3v3 = Int()
+
 
 # TODO auto select type
 class TelemetryEvent(Union):
     class Meta:
         types = (TelemetryHeroBan, TelemetryHeroSelect, TelemetryHeroSkin, TelemetryHeroSwap, TelemetryPlayerFirstSpawn, TelemetryLevelUp, TelemetryBuyItem, TelemetrySellItem, TelemetryLearnAbility, TelemetryUseAbility, TelemetryUseItemAbility,
-            TelemetryDealDamage, TelemetryHealTarget, TelemetryVampirism, TelemetryKillActor, TelemetryEarnXP, TelemetryGoldFromTowerKill, TelemetryNPCkillNPC)
+            TelemetryDealDamage, TelemetryHealTarget, TelemetryVampirism, TelemetryKillActor, TelemetryEarnXP, TelemetryGoldFromTowerKill, TelemetryGoldFromGoldMine, TelemetryGoldFromKrakenKill, TelemetryGoldFromExecution, TelemetryExecuted,
+            TelemetryNPCkillNPC, TelemetryTalentEquipped)
